@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Management</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+    input { padding: 8px; margin: 5px; }
+    button { padding: 8px 12px; background: green; color: white; border: none; cursor: pointer; margin-left: 5px; }
+    ul { list-style-type: none; padding: 0; }
+    li { background: #fff; margin: 5px 0; padding: 10px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+<h1>Employee Management System</h1>
+
+<h2>Add Employee</h2>
+<input type="text" id="name" placeholder="Name">
+<input type="email" id="email" placeholder="Email">
+<input type="number" id="salary" placeholder="Salary">
+<input type="text" id="department" placeholder="Department">
+<button onclick="addEmployee()">Add Employee</button>
+
+<h2>Employee List</h2>
+<ul id="employeeList"></ul>
+
+<script>
+const API = "http://localhost:5000";
+
+function addEmployee() {
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const salary = document.getElementById("salary").value;
+  const department = document.getElementById("department").value;
+
+  fetch(`${API}/employees`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, salary, department })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    loadEmployees();
+    document.getElementById("name").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("salary").value = "";
+    document.getElementById("department").value = "";
+  });
+}
+
+function loadEmployees() {
+  fetch(`${API}/employees`)
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById("employeeList");
+      list.innerHTML = "";
+      data.forEach(emp => {
+        list.innerHTML += `
+          <li>
+            ${emp.name} | ${emp.email} | ₹${emp.salary} | ${emp.department || 'N/A'}
+            <button onclick="deleteEmployee(${emp.id})">Delete</button>
+          </li>
+        `;
+      });
+    });
+}
+
+function deleteEmployee(id) {
+  fetch(`${API}/employees/${id}`, { method: "DELETE" })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      loadEmployees();
+    });
+}
+
+// Load employees on page load
+loadEmployees();
+</script>
+
+</body>
+</html>
